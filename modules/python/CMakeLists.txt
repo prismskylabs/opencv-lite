@@ -60,12 +60,16 @@ add_custom_command(
    DEPENDS ${opencv_hdrs})
 
 add_library(${the_module} SHARED src2/cv2.cpp ${CMAKE_CURRENT_BINARY_DIR}/generated0.i ${cv2_generated_hdrs} src2/cv2.cv.hpp)
-if(PYTHON_DEBUG_LIBRARIES AND NOT PYTHON_LIBRARIES MATCHES "optimized.*debug")
-  target_link_libraries(${the_module} debug ${PYTHON_DEBUG_LIBRARIES} optimized ${PYTHON_LIBRARIES})
-else()
-  target_link_libraries(${the_module} ${PYTHON_LIBRARIES})
-endif()
 target_link_libraries(${the_module} ${OPENCV_MODULE_${the_module}_DEPS})
+if(APPLE)
+  set_target_properties(${the_module} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+elseif(WIN32)
+  if(PYTHON_DEBUG_LIBRARIES AND NOT PYTHON_LIBRARIES MATCHES "optimized.*debug")
+    target_link_libraries(${the_module} debug ${PYTHON_DEBUG_LIBRARIES} optimized ${PYTHON_LIBRARIES})
+  else()
+    target_link_libraries(${the_module} ${PYTHON_LIBRARIES})
+  endif()
+endif()
 
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import distutils.sysconfig; print distutils.sysconfig.get_config_var('SO')"
                 RESULT_VARIABLE PYTHON_CVPY_PROCESS
