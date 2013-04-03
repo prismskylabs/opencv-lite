@@ -154,7 +154,7 @@ if(WITH_FFMPEG)
     endif(FFMPEG_INCLUDE_DIR)
     if(HAVE_FFMPEG)
       set(HIGHGUI_LIBRARIES ${HIGHGUI_LIBRARIES} "${FFMPEG_LIB_DIR}/libavcodec.a"
-          "${FFMPEG_LIB_DIR}/libavformat.a" "${FFMPEG_LIB_DIR}/libavutil.a"
+          "${FFMPEG_LIB_DIR}/libavutil.a" "${FFMPEG_LIB_DIR}/libavformat.a"
           "${FFMPEG_LIB_DIR}/libswscale.a")
       ocv_include_directories(${FFMPEG_INCLUDE_DIR})
     endif()
