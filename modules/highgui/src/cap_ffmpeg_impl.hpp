@@ -352,7 +352,9 @@ bool CvCapture_FFMPEG::open( const char* _filename )
     close();
 
 #if LIBAVFORMAT_BUILD >= CALC_FFMPEG_VERSION(52, 111, 0)
-    int err = avformat_open_input(&ic, _filename, NULL, NULL);
+    AVDictionary *d = NULL;
+    av_dict_set(&d, "rtsp_transport", "tcp", 0);
+    int err = avformat_open_input(&ic, _filename, NULL, &d);
 #else
     int err = av_open_input_file(&ic, _filename, NULL, 0, NULL);
 #endif
