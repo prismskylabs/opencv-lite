@@ -114,8 +114,8 @@ def build_framework(srcroot, dstroot):
 
     targets = ["iPhoneOS", "iPhoneOS", "iPhoneSimulator"]
     archs = ["armv7", "armv7s", "i386"]
-    #for i in range(len(targets)):
-    #    build_opencv(srcroot, os.path.join(dstroot, "build"), targets[i], archs[i])
+    for i in range(len(targets)):
+        build_opencv(srcroot, os.path.join(dstroot, "build"), targets[i], archs[i])
 
     put_framework_together(srcroot, dstroot)
 
