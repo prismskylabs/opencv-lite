@@ -117,7 +117,7 @@ OCV_OPTION(WITH_CUBLAS         "Include NVidia Cuda Basic Linear Algebra Subprog
 OCV_OPTION(WITH_CUDA           "Include NVidia Cuda Runtime support"         ON   IF (CMAKE_VERSION VERSION_GREATER "2.8" AND NOT ANDROID AND NOT IOS) )
 OCV_OPTION(WITH_CUFFT          "Include NVidia Cuda Fast Fourier Transform (FFT) library support"            ON  IF (CMAKE_VERSION VERSION_GREATER "2.8" AND NOT ANDROID AND NOT IOS) )
 OCV_OPTION(WITH_EIGEN          "Include Eigen2/Eigen3 support"               ON)
-OCV_OPTION(WITH_FFMPEG         "Include FFMPEG support"                      ON   IF (NOT ANDROID AND NOT IOS) )
+OCV_OPTION(WITH_FFMPEG         "Include FFMPEG support"                      ON   IF (NOT ANDROID AND NOT IOS AND NOT AXIS) )
 OCV_OPTION(WITH_GSTREAMER      "Include Gstreamer support"                   ON   IF (UNIX AND NOT APPLE AND NOT ANDROID) )
 OCV_OPTION(WITH_GTK            "Include GTK support"                         ON   IF (UNIX AND NOT APPLE AND NOT ANDROID) )
 OCV_OPTION(WITH_IMAGEIO        "ImageIO support for OS X"                    OFF  IF APPLE)
@@ -156,18 +156,18 @@ OCV_OPTION(BUILD_ANDROID_PACKAGE    "Build platform-specific package for Google 
 
 
 # 3rd party libs
-OCV_OPTION(BUILD_ZLIB               "Build zlib from source"         WIN32 OR IOS OR APPLE )
-OCV_OPTION(BUILD_TIFF               "Build libtiff from source"      WIN32 OR IOS OR ANDROID OR APPLE )
-OCV_OPTION(BUILD_JASPER             "Build libjasper from source"    WIN32 OR IOS OR ANDROID OR APPLE )
-OCV_OPTION(BUILD_JPEG               "Build libjpeg from source"      WIN32 OR IOS OR ANDROID OR APPLE )
-OCV_OPTION(BUILD_PNG                "Build libpng from source"       WIN32 OR IOS OR ANDROID OR APPLE )
+OCV_OPTION(BUILD_ZLIB               "Build zlib from source"         WIN32 OR IOS OR APPLE OR AXIS )
+OCV_OPTION(BUILD_TIFF               "Build libtiff from source"      WIN32 OR IOS OR ANDROID OR APPLE OR AXIS )
+OCV_OPTION(BUILD_JASPER             "Build libjasper from source"    WIN32 OR IOS OR ANDROID OR APPLE OR AXIS )
+OCV_OPTION(BUILD_JPEG               "Build libjpeg from source"      WIN32 OR IOS OR ANDROID OR APPLE OR AXIS )
+OCV_OPTION(BUILD_PNG                "Build libpng from source"       WIN32 OR IOS OR ANDROID OR APPLE OR AXIS )
 
 # OpenCV installation options
 # ===================================================
 OCV_OPTION(INSTALL_C_EXAMPLES       "Install C examples"        OFF )
 OCV_OPTION(INSTALL_PYTHON_EXAMPLES  "Install Python examples"   OFF )
 OCV_OPTION(INSTALL_ANDROID_EXAMPLES "Install Android examples"  OFF  IF ANDROID )
-OCV_OPTION(INSTALL_TO_MANGLED_PATHS "Enables mangled install paths, that help with side by side installs." OFF IF (UNIX AND NOT ANDROID AND NOT IOS AND BUILD_SHARED_LIBS) )
+OCV_OPTION(INSTALL_TO_MANGLED_PATHS "Enables mangled install paths, that help with side by side installs." OFF IF (UNIX AND NOT ANDROID AND NOT IOS AND NOT AXIS AND BUILD_SHARED_LIBS) )
 
 
 if(MSVC_IDE OR CMAKE_GENERATOR MATCHES Xcode)
@@ -372,7 +372,9 @@ if(BUILD_DOCS)
 endif(BUILD_DOCS)
 
 # --- Python Support ---
-include(cmake/OpenCVDetectPython.cmake REQUIRED)
+if(BUILD_opencv_python)
+  include(cmake/OpenCVDetectPython.cmake REQUIRED)
+endif()
 
 # --- Java Support ---
 if(ANDROID)
