@@ -409,9 +409,7 @@ if(BUILD_DOCS)
 endif(BUILD_DOCS)
 
 # --- Python Support ---
-if(BUILD_opencv_python)
-  include(cmake/OpenCVDetectPython.cmake REQUIRED)
-endif()
+include(cmake/OpenCVDetectPython.cmake REQUIRED)
 
 # --- Java Support ---
 include(cmake/OpenCVDetectApacheAnt.cmake)
