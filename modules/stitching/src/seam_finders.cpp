@@ -1318,7 +1318,7 @@ void GraphCutSeamFinder::find(const vector<Mat> &src, const vector<Point> &corne
 }
 
 
-#ifdef HAVE_OPENCV_GPU
+#if defined(HAVE_OPENCV_GPU) && !defined(ANDROID)
 void GraphCutSeamFinderGpu::find(const vector<Mat> &src, const vector<Point> &corners,
                                  vector<Mat> &masks)
 {
@@ -1646,4 +1646,3 @@ void GraphCutSeamFinderGpu::setGraphWeightsColorGrad(
 
 } // namespace detail
 } // namespace cv
-

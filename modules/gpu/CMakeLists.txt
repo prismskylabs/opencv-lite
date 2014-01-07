@@ -1,9 +1,10 @@
-if(ANDROID OR IOS)
+if(IOS)
   ocv_module_disable(gpu)
 endif()
 
 set(the_description "GPU-accelerated Computer Vision")
-ocv_add_module(gpu opencv_imgproc opencv_calib3d opencv_objdetect opencv_video opencv_photo opencv_legacy)
+ocv_add_module(gpu opencv_imgproc opencv_calib3d opencv_objdetect opencv_video opencv_photo opencv_legacy
+               OPTIONAL ${CUDA_LIBRARIES} ${CUDA_npp_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cufft_LIBRARY})
 
 ocv_module_include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/cuda")
 
@@ -43,7 +44,7 @@ if(HAVE_CUDA)
   ocv_cuda_compile(cuda_objs ${lib_cuda} ${ncv_cuda})
 
   set(cuda_link_libs ${CUDA_LIBRARIES} ${CUDA_npp_LIBRARY})
-  
+
   if(HAVE_CUFFT)
       set(cuda_link_libs ${cuda_link_libs} ${CUDA_cufft_LIBRARY})
   endif()

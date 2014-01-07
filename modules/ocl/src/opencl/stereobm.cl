@@ -27,7 +27,7 @@
 //
 //   * Redistribution's in binary form must reproduce the above copyright notice,
 //     this list of conditions and the following disclaimer in the documentation
-//     and/or other oclMaterials provided with the distribution.
+//     and/or other materials provided with the distribution.
 //
 //   * The name of the copyright holders may not be used to endorse or promote products
 //     derived from this software without specific prior written permission.
@@ -56,7 +56,7 @@
 #define radius 64
 #endif
 
-unsigned int CalcSSD(__local unsigned int *col_ssd)
+inline unsigned int CalcSSD(__local unsigned int *col_ssd)
 {
     unsigned int cache = col_ssd[0];
 
@@ -67,7 +67,7 @@ unsigned int CalcSSD(__local unsigned int *col_ssd)
     return cache;
 }
 
-uint2 MinSSD(__local unsigned int *col_ssd)
+inline uint2 MinSSD(__local unsigned int *col_ssd)
 {
     unsigned int ssd[N_DISPARITIES];
     const int win_size = (radius << 1);
@@ -95,7 +95,7 @@ uint2 MinSSD(__local unsigned int *col_ssd)
     return (uint2)(mssd, bestIdx);
 }
 
-void StepDown(int idx1, int idx2, __global unsigned char* imageL,
+inline void StepDown(int idx1, int idx2, __global unsigned char* imageL,
               __global unsigned char* imageR, int d,   __local unsigned int *col_ssd)
 {
     uint8 imgR1 = convert_uint8(vload8(0, imageR + (idx1 - d - 7)));
@@ -114,7 +114,7 @@ void StepDown(int idx1, int idx2, __global unsigned char* imageL,
     col_ssd[7 * (BLOCK_W + win_size)] += res.s0;
 }
 
-void InitColSSD(int x_tex, int y_tex, int im_pitch, __global unsigned char* imageL,
+inline void InitColSSD(int x_tex, int y_tex, int im_pitch, __global unsigned char* imageL,
                 __global unsigned char* imageR, int d,
                  __local unsigned int *col_ssd)
 {
@@ -153,7 +153,7 @@ __kernel void stereoKernel(__global unsigned char *left, __global unsigned char 
 
     int X = get_group_id(0) * BLOCK_W + get_local_id(0) + maxdisp + radius;
 
-#define Y (get_group_id(1) * ROWSperTHREAD + radius)
+#define Y (int)(get_group_id(1) * ROWSperTHREAD + radius)
 
     __global unsigned int* minSSDImage = cminSSDImage + X + Y * cminSSD_step;
     __global unsigned char* disparImage = disp + X + Y * disp_step;
@@ -190,7 +190,7 @@ __kernel void stereoKernel(__global unsigned char *left, __global unsigned char 
         {
             int idx1 = y_tex * img_step + x_tex;
             int idx2 = min(y_tex + ((radius << 1) + 1), cheight - 1) * img_step + x_tex;
-            
+
             barrier(CLK_LOCAL_MEM_FENCE);
 
             StepDown(idx1, idx2, left, right, d, col_ssd);
@@ -241,7 +241,7 @@ __kernel void prefilter_xsobel(__global unsigned char *input, __global unsigned 
 /////////////////////////////////// Textureness filtering ////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-float sobel(__global unsigned char *input, int x, int y, int rows, int cols)
+inline float sobel(__global unsigned char *input, int x, int y, int rows, int cols)
 {
     float conv = 0;
     int y1 = y==0? 0 : y-1;
@@ -256,29 +256,14 @@ float sobel(__global unsigned char *input, int x, int y, int rows, int cols)
     return fabs(conv);
 }
 
-float CalcSums(__local float *cols, __local float *cols_cache, int winsz)
+inline float CalcSums(__local float *cols, __local float *cols_cache, int winsz)
 {
-    float cache = 0;
-    float cache2 = 0;
-    int winsz2 = winsz/2;
+    unsigned int cache = cols[0];
 
-    int x = get_local_id(0);
-    int group_size_x = get_local_size(0);
-
-    for(int i = 1; i <= winsz2; i++)
+    for(int i = 1; i <= winsz; i++)
         cache += cols[i];
 
-    cols_cache[0] = cache;
-
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if (x < group_size_x - winsz2)
-        cache2 = cols_cache[winsz2];
-    else
-        for(int i = winsz2 + 1; i < winsz; i++)
-            cache2 += cols[i];
-
-    return cols[0] + cache + cache2;
+    return cache;
 }
 
 #define RpT (2 * ROWSperTHREAD)  // got experimentally
@@ -301,8 +286,7 @@ __kernel void textureness_kernel(__global unsigned char *disp, int disp_rows, in
     int beg_row = group_id_y * RpT;
     int end_row = min(beg_row + RpT, disp_rows);
 
-//   if (x < disp_cols)
-//   {
+
     int y = beg_row;
 
     float sum = 0;
@@ -340,11 +324,15 @@ __kernel void textureness_kernel(__global unsigned char *disp, int disp_rows, in
         }
 
         barrier(CLK_LOCAL_MEM_FENCE);
-        float sum_win = CalcSums(cols, cols_cache + local_id_x, winsz) * 255;
-        if (sum_win < threshold)
-            disp[y * disp_step + x] = 0;
+
+        if (x < disp_cols)
+        {
+            float sum_win = CalcSums(cols, cols_cache + local_id_x, winsz) * 255;
+            if (sum_win < threshold)
+                disp[y * disp_step + x] = 0;
+        }
 
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-    //  }
+
 }

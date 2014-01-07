@@ -61,7 +61,6 @@
 #ifdef __GNUC__
 #  pragma GCC diagnostic ignored "-Wmissing-declarations"
 #endif
-#include <MultiMon.h>
 
 #include <commctrl.h>
 #include <winuser.h>
@@ -1087,12 +1086,7 @@ cvShowImage( const char* name, const CvArr* arr )
     window = icvFindWindowByName(name);
     if(!window)
     {
-        #ifndef HAVE_OPENGL
-            cvNamedWindow(name, CV_WINDOW_AUTOSIZE);
-        #else
-            cvNamedWindow(name, CV_WINDOW_AUTOSIZE | CV_WINDOW_OPENGL);
-        #endif
-
+        cvNamedWindow(name, CV_WINDOW_AUTOSIZE);
         window = icvFindWindowByName(name);
     }
 

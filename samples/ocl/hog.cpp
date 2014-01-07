@@ -57,6 +57,7 @@ private:
     string vdo_source;
     string output;
     int camera_id;
+    bool write_once;
 };
 
 int main(int argc, char** argv)
@@ -71,6 +72,14 @@ int main(int argc, char** argv)
         "{ l |larger_win| false          | use 64x128 window}"
         "{ o |  output  |                | specify output path when input is images}";
     CommandLineParser cmd(argc, argv, keys);
+    if (cmd.get<bool>("help"))
+    {
+        cout << "Usage : hog [options]" << endl;
+        cout << "Available options:" << endl;
+        cmd.printParams();
+        return EXIT_SUCCESS;
+    }
+
     App app(cmd);
     try
     {
@@ -88,7 +97,7 @@ int main(int argc, char** argv)
     {
         return cout << "unknown exception" << endl, 1;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 App::App(CommandLineParser& cmd)
@@ -97,6 +106,7 @@ App::App(CommandLineParser& cmd)
          << "\tESC - exit\n"
          << "\tm - change mode GPU <-> CPU\n"
          << "\tg - convert image to gray or not\n"
+         << "\to - save output image once, or switch on/off video save\n"
          << "\t1/q - increase/decrease HOG scale\n"
          << "\t2/w - increase/decrease levels count\n"
          << "\t3/e - increase/decrease HOG group threshold\n"
@@ -120,6 +130,7 @@ App::App(CommandLineParser& cmd)
     hit_threshold = win_width == 48 ? 1.4 : 0.;
     scale = 1.05;
     gamma_corr = true;
+    write_once = false;
 
     cout << "Group threshold: " << gr_threshold << endl;
     cout << "Levels number: " << nlevels << endl;
@@ -132,8 +143,6 @@ App::App(CommandLineParser& cmd)
 
 void App::run()
 {
-    vector<ocl::Info> oclinfo;
-    ocl::getDevice(oclinfo);
     running = true;
     VideoWriter video_writer;
 
@@ -254,10 +263,11 @@ void App::run()
 
             workEnd();
 
-            if (output!="")
+            if (output!="" && write_once)
             {
                 if (img_source!="")     // wirte image
                 {
+                    write_once = false;
                     imwrite(output, img_to_show);
                 }
                 else                    //write video
@@ -339,6 +349,10 @@ void App::handleKey(char key)
     case 'C':
         gamma_corr = !gamma_corr;
         cout << "Gamma correction: " << gamma_corr << endl;
+        break;
+    case 'o':
+    case 'O':
+        write_once = !write_once;
         break;
     }
 }
@@ -431,4 +445,3 @@ double App::checkRectSimilarity(Size sz,
     }
     return final_test_result;
 }
-
