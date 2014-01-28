@@ -86,6 +86,9 @@ def put_framework_together(srcroot, dstroot):
     # copy Info.plist
     shutil.copyfile(tdir0 + "/ios/Info.plist", dstdir + "/Resources/Info.plist")
 
+    # copy cascades
+    # TODO ...
+
     # make symbolic links
     os.symlink("A", "Versions/Current")
     os.symlink("Versions/Current/Headers", "Headers")
